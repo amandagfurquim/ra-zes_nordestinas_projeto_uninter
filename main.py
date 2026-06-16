@@ -1,3 +1,4 @@
+from auth import get_password_hash
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 import schemas, models
@@ -26,10 +27,13 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="Este e-mail já está cadastrado")
     
+    # CRÍTICO: Chame a função aqui!
+    hashed_pwd = get_password_hash(user.password)
+    
     new_user = models.User(
         username=user.username,
         email=user.email,
-        hashed_password=user.password  # Vamos criptografar logo logo!
+        hashed_password=hashed_pwd
     )
     
     db.add(new_user)
